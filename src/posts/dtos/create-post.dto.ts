@@ -9,6 +9,7 @@ import {
   IsString,
   IsUrl,
   Matches,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 import { postType } from '../enums/postType.enum';
@@ -24,6 +25,7 @@ export class CreatePostDto {
   @IsString()
   @MinLength(4)
   @IsNotEmpty()
+  @MaxLength(512)
   title: string;
 
   @ApiProperty({
@@ -45,6 +47,7 @@ export class CreatePostDto {
     message:
       'a slug should be lowercase alphanumeric with dashes, e.g. "my-slug"',
   })
+  @MaxLength(256)
   slug: string;
 
   @ApiProperty({
@@ -79,6 +82,7 @@ export class CreatePostDto {
   })
   @IsOptional()
   @IsUrl()
+  @MaxLength(1024)
   featuredImageUrl?: string;
 
   @ApiPropertyOptional({
