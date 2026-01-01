@@ -1,8 +1,8 @@
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
-import { CreatePostMetaOptionsDto } from '../dtos/create-post-meta-options.dto';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { CreatePostMetaOptionsDto } from '../../meta-options/dtos/create-post-meta-options.dto';
 import { postType } from '../enums/postType.enum';
 import { postStatus } from '../enums/statusType.enum';
-
+@Entity()
 export class Post {
   @PrimaryGeneratedColumn()
   id: number;
@@ -17,7 +17,6 @@ export class Post {
   @Column({
     type: 'enum',
     enum: postType,
-    length: 96,
     nullable: false,
     default: postType.post,
   })

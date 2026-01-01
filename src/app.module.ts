@@ -3,9 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { Post } from './posts/entities/post.entity';
+import { MetaOptionsModule } from './meta-options/meta-options.module';
 import { PostsModule } from './posts/posts.module';
-import { User } from './users/entities/user.entity';
+import { TagsModule } from './tags/tags.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -19,7 +19,7 @@ import { UsersModule } from './users/users.module';
       useFactory: () => ({
         type: 'postgres',
         username: 'postgres',
-        entities: [User, Post],
+        autoLoadEntities: true,
         synchronize: true, // use only in development
         port: 5432,
         password: 'behzad@postgres',
@@ -27,6 +27,8 @@ import { UsersModule } from './users/users.module';
         database: 'nest-blog',
       }),
     }),
+    TagsModule,
+    MetaOptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
