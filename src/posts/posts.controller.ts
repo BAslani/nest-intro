@@ -17,7 +17,7 @@ export class PostsController {
   @ApiResponse({ status: 201, description: 'post created successfully' })
   @Post()
   public createPost(@Body() createPostDto: CreatePostDto) {
-    return createPostDto;
+    return this.postsService.createPost(createPostDto);
   }
 
   @Patch()

@@ -11,6 +11,7 @@ import {
   Matches,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
 import { postType } from '../enums/postType.enum';
 import { postStatus } from '../enums/statusType.enum';
@@ -104,25 +105,21 @@ export class CreatePostDto {
   tags?: string[];
 
   @ApiPropertyOptional({
-    type: 'array',
+    type: 'string',
     required: false,
     items: {
       type: 'object',
       properties: {
-        key: {
-          type: 'string',
-          description: 'string identifier',
-          example: 'post-meta-key',
-        },
-        value: {
-          type: 'any',
-          description: 'any value to be stored',
-          example: 'post-meta-value',
+        metaValue: {
+          type: 'json',
+          description: 'the "metaValue" is a JSON string',
+          example: '{"sidebarEnabled": true}',
         },
       },
     },
   })
   @IsOptional()
+  @ValidateNested()
   @Type(() => CreatePostMetaOptionsDto)
-  metaOptions?: CreatePostMetaOptionsDto;
+  metaOptions?: CreatePostMetaOptionsDto | null;
 }
