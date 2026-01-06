@@ -59,13 +59,7 @@ export class UsersService {
   /**
    * finds a single user by id
    */
-  public findOneById(id: string) {
-    console.log(id);
-
-    return {
-      id: 2,
-      name: 'Jane Doe',
-      email: 'jane.doe@gmail.com',
-    };
+  public findOneById(id: number) {
+    return this.usersRepository.findOneBy({ id });
   }
 }

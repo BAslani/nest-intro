@@ -19,7 +19,7 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get('/:userId')
-  public getUserPosts(@Param('userId') userId: string) {
+  public getUserPosts(@Param('userId') userId: number) {
     return this.postsService.findUserPosts(userId);
   }
 

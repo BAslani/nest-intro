@@ -3,11 +3,13 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { postType } from '../enums/postType.enum';
 import { postStatus } from '../enums/statusType.enum';
+import { User } from 'src/users/entities/user.entity';
 @Entity()
 export class Post {
   @PrimaryGeneratedColumn()
@@ -69,13 +71,16 @@ export class Post {
   })
   publishedOn: Date;
 
-  @OneToOne(() => MetaOption, {
+  @OneToOne(() => MetaOption, (metaOption) => metaOption.post, {
     // cascade: ['insert', 'update'],
     cascade: true,
-    eager: true, // either set eager or set relations in the service
+    // eager: true, // either set eager or set relations in the service
   })
   @JoinColumn()
   metaOptions?: MetaOption;
 
   tags?: string[];
+
+  @ManyToOne(() => User, (user) => user.posts)
+  author: User;
 }

@@ -16,30 +16,34 @@ export class PostsService {
     @InjectRepository(MetaOption)
     private readonly metaOptionsRepository: Repository<MetaOption>,
   ) {}
-  public async findUserPosts(userId: string) {
+  public async findUserPosts(userId: number) {
     const user = this.usersService.findOneById(userId);
-    const posts = await this.postsRepository
-      .find
-      //   {
-      //   relations: {
-      //     metaOptions: true,
-      //   },
-      // }
-      (); // either set relations or set eager in the entity
+    const posts = await this.postsRepository.find({
+      relations: {
+        metaOptions: true,
+        author: true,
+      },
+    }); // either set relations or set eager in the entity
 
     console.log(user);
     return posts;
   }
 
   public async createPost(createPostDto: CreatePostDto) {
+    const author = await this.usersService.findOneById(createPostDto.authorId);
+    if (!author) throw new Error('User not found');
+
     const { metaOptions, ...postData } = createPostDto;
 
     const post = this.postsRepository.create({
       ...postData,
+      author,
       metaOptions: metaOptions
         ? this.metaOptionsRepository.create(metaOptions)
         : undefined,
     });
+
+    console.log('POST: ', post);
 
     return await this.postsRepository.save(post);
   }
