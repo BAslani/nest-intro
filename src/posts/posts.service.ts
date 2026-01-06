@@ -16,20 +16,19 @@ export class PostsService {
     @InjectRepository(MetaOption)
     private readonly metaOptionsRepository: Repository<MetaOption>,
   ) {}
-  public findUserPosts(userId: string) {
+  public async findUserPosts(userId: string) {
     const user = this.usersService.findOneById(userId);
-    return [
-      {
-        user: user,
-        title: 'Post 1',
-        content: 'Post 1 content',
-      },
-      {
-        user: user,
-        title: 'Post 2',
-        content: 'Post 2 content',
-      },
-    ];
+    const posts = await this.postsRepository
+      .find
+      //   {
+      //   relations: {
+      //     metaOptions: true,
+      //   },
+      // }
+      (); // either set relations or set eager in the entity
+
+    console.log(user);
+    return posts;
   }
 
   public async createPost(createPostDto: CreatePostDto) {
@@ -43,5 +42,19 @@ export class PostsService {
     });
 
     return await this.postsRepository.save(post);
+  }
+
+  public async deletePost(id: number) {
+    const post = await this.postsRepository.findOneBy({ id });
+    if (!post) {
+      throw new Error('Post not found');
+    }
+    await this.postsRepository.delete(id);
+
+    if (!post.metaOptions) return;
+
+    await this.metaOptionsRepository.delete(post.metaOptions.id);
+
+    return { deleted: true, id };
   }
 }

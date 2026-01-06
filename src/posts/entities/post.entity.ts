@@ -72,6 +72,7 @@ export class Post {
   @OneToOne(() => MetaOption, {
     // cascade: ['insert', 'update'],
     cascade: true,
+    eager: true, // either set eager or set relations in the service
   })
   @JoinColumn()
   metaOptions?: MetaOption;
