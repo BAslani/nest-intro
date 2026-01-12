@@ -1,15 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Patch } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MetaOption } from 'src/meta-options/entities/meta-option.entity';
+import { Tag } from 'src/tags/entities/tag.entity';
+import { TagsService } from 'src/tags/tags.service';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { Post } from './entities/post.entity';
+import { UpdatePostDto } from './dtos/update-post.dto';
 
 @Injectable()
 export class PostsService {
   constructor(
     private readonly usersService: UsersService,
+    private readonly tagsService: TagsService,
 
     @InjectRepository(Post)
     private readonly postsRepository: Repository<Post>,
@@ -22,6 +26,7 @@ export class PostsService {
       relations: {
         metaOptions: true,
         author: true,
+        tags: true,
       },
     }); // either set relations or set eager in the entity
 
@@ -34,6 +39,10 @@ export class PostsService {
     if (!author) throw new Error('User not found');
 
     const { metaOptions, ...postData } = createPostDto;
+    let tags: Tag[] = [];
+    if (createPostDto.tags) {
+      tags = await this.tagsService.findTags(createPostDto.tags);
+    }
 
     const post = this.postsRepository.create({
       ...postData,
@@ -41,9 +50,35 @@ export class PostsService {
       metaOptions: metaOptions
         ? this.metaOptionsRepository.create(metaOptions)
         : undefined,
+      tags: tags,
     });
 
-    console.log('POST: ', post);
+    return await this.postsRepository.save(post);
+  }
+
+  @Patch()
+  public async updatePost(updatePostDto: UpdatePostDto) {
+    let tags: Tag[] = [];
+    if (updatePostDto.tags) {
+      tags = await this.tagsService.findTags(updatePostDto.tags);
+    }
+
+    const post = await this.postsRepository.findOneBy({
+      id: updatePostDto.id,
+    });
+
+    if (!post) return;
+
+    post.title = updatePostDto.title ?? post.title;
+    post.content = updatePostDto.content ?? post.content;
+    post.status = updatePostDto.status ?? post.status;
+    post.postType = updatePostDto.postType ?? post.postType;
+    post.slug = updatePostDto.slug ?? post.slug;
+    post.featuredImageUrl =
+      updatePostDto.featuredImageUrl ?? post.featuredImageUrl;
+    post.publishedOn = updatePostDto.publishedOn ?? post.publishedOn;
+
+    post.tags = tags;
 
     return await this.postsRepository.save(post);
   }
