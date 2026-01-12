@@ -1,8 +1,10 @@
+import { Post } from 'src/posts/entities/post.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -26,6 +28,9 @@ export class Tag {
 
   @Column({ type: 'varchar', length: 1024, nullable: true })
   featuredImageUrl: string;
+
+  @ManyToMany(() => Post, (post) => post.tags)
+  posts: Post[];
 
   @CreateDateColumn()
   createDate: Date;

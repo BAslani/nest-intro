@@ -82,7 +82,9 @@ export class Post {
   @JoinColumn()
   metaOptions?: MetaOption;
 
-  @ManyToMany(() => Tag)
+  @ManyToMany(() => Tag, (tag) => tag.posts, {
+    onDelete: 'CASCADE',
+  })
   @JoinTable()
   tags?: Tag[];
 
