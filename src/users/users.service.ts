@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { GetUsersParamDto } from './dtos/get-users-param.dto';
 import { User } from './entities/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 /**
  * class to handle user related operations
@@ -13,6 +14,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -41,6 +44,8 @@ export class UsersService {
     console.log(getUsersParamDto);
     console.log(limit);
     console.log(page);
+    const environment = this.configService.get<string>('TEST_ENV');
+    console.log(environment);
 
     return [
       {
