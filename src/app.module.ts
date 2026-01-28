@@ -9,17 +9,19 @@ import { PostsModule } from './posts/posts.module';
 import { TagsModule } from './tags/tags.module';
 import { UsersModule } from './users/users.module';
 
-const ENV = process.env.NODE_ENV;
+const ENV = process.env.NODE_ENV?.trim();
 
+console.log('ENV CHECK:', {
+  NODE_ENV: process.env.NODE_ENV,
+  DB_PASS: process.env.DATABASE_PASSWORD,
+  TYPE: typeof process.env.DATABASE_PASSWORD,
+});
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: !ENV ? '.env' : `.env.${ENV}`,
     }),
-    UsersModule,
-    PostsModule,
-    AuthModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -34,6 +36,9 @@ const ENV = process.env.NODE_ENV;
         database: configService.get('DATABASE_NAME'),
       }),
     }),
+    UsersModule,
+    PostsModule,
+    AuthModule,
     TagsModule,
     MetaOptionsModule,
   ],
