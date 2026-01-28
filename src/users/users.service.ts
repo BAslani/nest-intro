@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import profileConfig from './config/profile.config';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { GetUsersParamDto } from './dtos/get-users-param.dto';
 import { User } from './entities/user.entity';
-import { ConfigService } from '@nestjs/config';
 
 /**
  * class to handle user related operations
@@ -15,7 +16,8 @@ export class UsersService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
 
-    private readonly configService: ConfigService,
+    @Inject(profileConfig.KEY)
+    private readonly profileConfiguration: ConfigType<typeof profileConfig>,
   ) {}
 
   /**
@@ -44,8 +46,8 @@ export class UsersService {
     console.log(getUsersParamDto);
     console.log(limit);
     console.log(page);
-    const environment = this.configService.get<string>('TEST_ENV');
-    console.log(environment);
+
+    console.log(this.profileConfiguration.apiKey);
 
     return [
       {
