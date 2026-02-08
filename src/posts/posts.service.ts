@@ -1,4 +1,10 @@
-import { Injectable, Patch } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  Patch,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MetaOption } from 'src/meta-options/entities/meta-option.entity';
 import { Tag } from 'src/tags/entities/tag.entity';
@@ -6,8 +12,8 @@ import { TagsService } from 'src/tags/tags.service';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dtos/create-post.dto';
-import { Post } from './entities/post.entity';
 import { UpdatePostDto } from './dtos/update-post.dto';
+import { Post } from './entities/post.entity';
 
 @Injectable()
 export class PostsService {
@@ -58,29 +64,61 @@ export class PostsService {
 
   @Patch()
   public async updatePost(updatePostDto: UpdatePostDto) {
-    let tags: Tag[] = [];
-    if (updatePostDto.tags) {
-      tags = await this.tagsService.findTags(updatePostDto.tags);
+    try {
+      let tags: Tag[] = [];
+
+      if (updatePostDto.tags) {
+        try {
+          tags = await this.tagsService.findTags(updatePostDto.tags);
+        } catch (error) {
+          console.log(error);
+          throw new BadRequestException(
+            'Invalid tags provided',
+            'One or more tags could not be resolved',
+          );
+        }
+      }
+
+      const post = await this.postsRepository.findOneBy({
+        id: updatePostDto.id,
+      });
+
+      if (!post) {
+        throw new NotFoundException(
+          `Post with id ${updatePostDto.id} not found`,
+        );
+      }
+
+      post.title = updatePostDto.title ?? post.title;
+      post.content = updatePostDto.content ?? post.content;
+      post.status = updatePostDto.status ?? post.status;
+      post.postType = updatePostDto.postType ?? post.postType;
+      post.slug = updatePostDto.slug ?? post.slug;
+      post.featuredImageUrl =
+        updatePostDto.featuredImageUrl ?? post.featuredImageUrl;
+      post.publishedOn = updatePostDto.publishedOn ?? post.publishedOn;
+
+      post.tags = tags;
+
+      return await this.postsRepository.save(post);
+    } catch (error) {
+      // Allow known HTTP exceptions to pass through
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+
+      console.error(error);
+
+      throw new RequestTimeoutException(
+        'Failed to update post, try again later',
+        {
+          description: 'Database or service communication error',
+        },
+      );
     }
-
-    const post = await this.postsRepository.findOneBy({
-      id: updatePostDto.id,
-    });
-
-    if (!post) return;
-
-    post.title = updatePostDto.title ?? post.title;
-    post.content = updatePostDto.content ?? post.content;
-    post.status = updatePostDto.status ?? post.status;
-    post.postType = updatePostDto.postType ?? post.postType;
-    post.slug = updatePostDto.slug ?? post.slug;
-    post.featuredImageUrl =
-      updatePostDto.featuredImageUrl ?? post.featuredImageUrl;
-    post.publishedOn = updatePostDto.publishedOn ?? post.publishedOn;
-
-    post.tags = tags;
-
-    return await this.postsRepository.save(post);
   }
 
   public async deletePost(id: number) {

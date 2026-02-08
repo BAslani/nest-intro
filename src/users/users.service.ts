@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
   NotFoundException,
@@ -68,28 +70,25 @@ export class UsersService {
    * method to fetch all users
    */
   public findAll(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     getUsersParamDto: GetUsersParamDto,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     limit: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     page: number,
   ) {
-    console.log(getUsersParamDto);
-    console.log(limit);
-    console.log(page);
-
-    console.log(this.profileConfiguration.apiKey);
-
-    return [
+    throw new HttpException(
       {
-        id: 1,
-        name: 'John Doe',
-        email: 'john.doe@gmail.com',
+        status: HttpStatus.MOVED_PERMANENTLY,
+        error: 'The API endpoint does not exist',
+        fileName: 'users.service.ts',
+        lineNumber: 80,
       },
+      HttpStatus.MOVED_PERMANENTLY,
       {
-        id: 2,
-        name: 'Jane Doe',
-        email: 'jane.doe@gmail.com',
+        description: 'Occured because the API endpoint was permanently moved',
       },
-    ];
+    );
   }
 
   /**
