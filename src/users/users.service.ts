@@ -1,4 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -24,15 +30,38 @@ export class UsersService {
    * method to create a new user
    */
   public async createUser(createUserDto: CreateUserDto) {
-    const existingUser = await this.usersRepository.findOne({
-      where: { email: createUserDto.email },
-    });
+    let existingUser: User | null = null;
+
+    try {
+      existingUser = await this.usersRepository.findOne({
+        where: { email: createUserDto.email },
+      });
+    } catch (error) {
+      console.log(error);
+      throw new RequestTimeoutException(
+        'Failed to fetch user, try again later',
+        {
+          description: 'Error connecting to the database',
+        },
+      );
+    }
+
     if (existingUser) {
-      console.log('error');
+      throw new BadRequestException('User already exists');
     }
 
     const user = this.usersRepository.create(createUserDto);
-    return await this.usersRepository.save(user);
+    try {
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      console.log(error);
+      throw new RequestTimeoutException(
+        'Failed to create user, try again later',
+        {
+          description: 'Error connecting to the database',
+        },
+      );
+    }
   }
 
   /**
@@ -66,7 +95,26 @@ export class UsersService {
   /**
    * finds a single user by id
    */
-  public findOneById(id: number) {
-    return this.usersRepository.findOneBy({ id });
+  public async findOneById(id: number) {
+    try {
+      const user = await this.usersRepository.findOneBy({ id });
+
+      if (!user) {
+        throw new NotFoundException(`User with id ${id} not found`);
+      }
+
+      return user;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new RequestTimeoutException(
+        'Failed to fetch user, try again later',
+        {
+          description: 'Error connecting to the database',
+        },
+      );
+    }
   }
 }
