@@ -14,6 +14,7 @@ import { Repository } from 'typeorm';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { Post } from './entities/post.entity';
+import { GetPostsDto } from './dtos/get-posts.dto';
 
 @Injectable()
 export class PostsService {
@@ -26,14 +27,17 @@ export class PostsService {
     @InjectRepository(MetaOption)
     private readonly metaOptionsRepository: Repository<MetaOption>,
   ) {}
-  public async findUserPosts(userId: number) {
+  public async findUserPosts(postQuery: GetPostsDto, userId: number) {
     const user = this.usersService.findOneById(userId);
+
     const posts = await this.postsRepository.find({
       relations: {
         metaOptions: true,
         author: true,
         tags: true,
       },
+      take: postQuery.limit,
+      skip: (postQuery.page - 1) * postQuery.limit,
     }); // either set relations or set eager in the entity
 
     console.log(user);

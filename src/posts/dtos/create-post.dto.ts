@@ -93,7 +93,7 @@ export class CreatePostDto {
   })
   @IsISO8601()
   @IsOptional()
-  publishedOn?: Date;
+  publishedOn?: string;
 
   @ApiPropertyOptional({
     description: 'post tag ids',

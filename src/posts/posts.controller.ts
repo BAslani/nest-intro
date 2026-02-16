@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreatePostDto } from './dtos/create-post.dto';
+import { GetPostsDto } from './dtos/get-posts.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { PostsService } from './posts.service';
 
@@ -19,8 +20,11 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get('/:userId')
-  public getUserPosts(@Param('userId') userId: number) {
-    return this.postsService.findUserPosts(userId);
+  public getUserPosts(
+    @Param('userId') userId: number,
+    @Query() postQuery: GetPostsDto,
+  ) {
+    return this.postsService.findUserPosts(postQuery, userId);
   }
 
   @ApiOperation({ summary: 'creates a new post' })
