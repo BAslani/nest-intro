@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   HttpException,
   HttpStatus,
   Inject,
@@ -15,6 +14,7 @@ import { CreateManyUsersDto } from './dtos/create-many-users.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { GetUsersParamDto } from './dtos/get-users-param.dto';
 import { User } from './entities/user.entity';
+import { CreateUserProvider } from './providers/create-user.provider';
 import { UsersCreateManyProvider } from './providers/users-create-many.provider';
 
 /**
@@ -30,44 +30,15 @@ export class UsersService {
     private readonly profileConfiguration: ConfigType<typeof profileConfig>,
 
     private readonly usersCreateManyProvider: UsersCreateManyProvider,
+
+    private readonly createUserProvider: CreateUserProvider,
   ) {}
 
   /**
    * method to create a new user
    */
   public async createUser(createUserDto: CreateUserDto) {
-    let existingUser: User | null = null;
-
-    try {
-      existingUser = await this.usersRepository.findOne({
-        where: { email: createUserDto.email },
-      });
-    } catch (error) {
-      console.log(error);
-      throw new RequestTimeoutException(
-        'Failed to fetch user, try again later',
-        {
-          description: 'Error connecting to the database',
-        },
-      );
-    }
-
-    if (existingUser) {
-      throw new BadRequestException('User already exists');
-    }
-
-    const user = this.usersRepository.create(createUserDto);
-    try {
-      return await this.usersRepository.save(user);
-    } catch (error) {
-      console.log(error);
-      throw new RequestTimeoutException(
-        'Failed to create user, try again later',
-        {
-          description: 'Error connecting to the database',
-        },
-      );
-    }
+    return await this.createUserProvider.createUser(createUserDto);
   }
 
   /**
