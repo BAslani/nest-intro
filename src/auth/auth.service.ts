@@ -1,4 +1,3 @@
-import { SignInDto } from './dtos/signin.dto';
 import {
   forwardRef,
   Inject,
@@ -6,7 +5,11 @@ import {
   RequestTimeoutException,
   UnauthorizedException,
 } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
+import jwtConfig from './config/jwt.config';
+import { SignInDto } from './dtos/signin.dto';
 import { HashingProvider } from './providers/hashing.provider';
 
 @Injectable()
@@ -16,6 +19,10 @@ export class AuthService {
     private readonly usersService: UsersService,
 
     private readonly hashingProvider: HashingProvider,
+    private readonly jwtService: JwtService,
+
+    @Inject(jwtConfig.KEY)
+    private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
   ) {}
 
   public async signin(signInDto: SignInDto) {
@@ -39,7 +46,22 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return true;
+    const accessToken = await this.jwtService.signAsync(
+      {
+        sub: user.id,
+        email: user.email,
+      },
+      {
+        audience: this.jwtConfiguration.audience,
+        issuer: this.jwtConfiguration.issuer,
+        secret: this.jwtConfiguration.secret,
+        expiresIn: this.jwtConfiguration.accessTokenTtl,
+      },
+    );
+
+    return {
+      accessToken,
+    };
   }
 
   public isAuth() {
